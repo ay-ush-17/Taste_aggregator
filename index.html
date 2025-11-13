@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InsightFeed Project 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simple loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Summary rendering fixes */
+        #summary-output {
+            white-space: normal; /* don't preserve literal newlines */
+            text-align: left;    /* avoid justification spacing */
+            overflow-wrap: break-word;
+            word-break: normal;
+        }
+        .article-summaries { padding-left: 1rem; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">InsightFeed: Your Personal AI Analyst</h1>
+
+        <!-- Section 1: Category Selection -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Phase 1: Select Your Interests</h2>
+            <p class="text-gray-600 mb-4">Choose the categories you want to include in your aggregated news brief.</p>
+            
+            <!-- Category Checkboxes -->
+            <div id="category-list" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                <!-- Categories -->
+                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="checkbox" name="category" value="AI" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
+                    <span class="font-medium text-gray-700">Artificial Intelligence</span>
+                </label>
+                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="checkbox" name="category" value="Web3" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
+                    <span class="font-medium text-gray-700">Web3 & Crypto</span>
+                </label>
+                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="checkbox" name="category" value="StockMarket" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
+                    <span class="font-medium text-gray-700">Stock Market</span>
+                </label>
+                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="checkbox" name="category" value="Geopolitics" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
+                    <span class="font-medium text-gray-700">Geopolitics</span>
+                </label>
+                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="checkbox" name="category" value="Science" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
+                    <span class="font-medium text-gray-700">Science</span>
+                </label>
+                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
+                    <input type="checkbox" name="category" value="Business" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
+                    <span class="font-medium text-gray-700">Business</span>
+                </label>
+            </div>
+            
+            <button id="build-feed-btn" onclick="buildFeed()" class="w-full bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center">
+                <span>Build & Analyze My Feed</span>
+            </button>
+        </div>
+
+        <!-- Section 2: Aggregated Information -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Phase 2: Your Aggregated Brief</h2>
+            <div id="summary-output" class="border rounded-lg p-4 bg-gray-50 min-h-[10rem] space-y-2">
+                <p class="text-gray-500">Your aggregated summary will appear here after you build your feed...</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Chat with your Feed -->
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Phase 3: Ask Questions in Your Domain</h2>
+            <p class="text-gray-600 mb-4">Once your feed is built, you can ask questions based on the articles it fetched.</p>
+            
+            <!-- Chat Window -->
+            <div id="chat-window" class="border rounded-lg bg-gray-50 h-64 overflow-y-auto p-4 space-y-4 mb-4">
+                <div class="text-gray-500 italic text-sm text-center">Chat history will appear here...</div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="flex">
+                <input type="text" id="chat-input" placeholder="Ask a question about your feed..." class="flex-grow border-gray-300 rounded-l-lg p-3 focus:ring-blue-500 focus:border-blue-500" disabled>
+                <button id="chat-submit" onclick="askQuestion()" class="bg-green-500 text-white px-5 py-3 rounded-r-lg hover:bg-green-600 transition" disabled>
+                    Ask
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+        let isFeedBuilt = false;
+
+        async function buildFeed() {
+            const buildBtn = document.getElementById('build-feed-btn');
+            const summaryOutput = document.getElementById('summary-output');
+            
+            // Get selected categories
+            const checkedBoxes = document.querySelectorAll('input[name="category"]:checked');
+            if (checkedBoxes.length === 0) {
+                summaryOutput.innerHTML = '<p class="text-orange-500">Please select at least one category first.</p>';
+                return;
+            }
+            const categories = Array.from(checkedBoxes).map(cb => cb.value);
+
+            // Set loading state
+            summaryOutput.innerHTML = `
+                <div class="flex items-center justify-center p-8">
+                    <div class="spinner mr-3"></div>
+                    <span class="text-gray-500">Building feed, scraping articles, and generating summary... This may take a minute.</span>
+                </div>`;
+            buildBtn.disabled = true;
+            buildBtn.innerHTML = `
+                <div class="spinner mr-3"></div>
+                <span>Building...</span>`;
+
+            try {
+                const response = await fetch(`${API_URL}/build-and-summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categories: categories })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Helper to escape text when we must render plain text
+                function escapeHtml(text) {
+                    if (!text) return '';
+                    return text.replace(/&/g, '&amp;')
+                               .replace(/</g, '&lt;')
+                               .replace(/>/g, '&gt;')
+                               .replace(/"/g, '&quot;')
+                               .replace(/'/g, '&#039;');
+                }
+
+                // Render the per-article findings in the user's requested layout for all articles
+                function renderArticles(summaries, categories) {
+                    if (!summaries || summaries.length === 0) return '<p class="text-gray-500">No articles returned.</p>';
+                    const domainName = categories && categories.length ? categories.join(', ') : 'Your Domain Name Here';
+                    function splitSentences(text) {
+                        return text.split(/(?<=[.!?])\s+/).filter(Boolean);
+                    }
+
+                    let out = `<div class="mt-6"><h2 class="text-xl font-bold">📚 Article Findings: ${escapeHtml(domainName)}</h2>`;
+
+                    // show only top 5
+                    summaries.slice(0,5).forEach((s, idx) => {
+                        // s may be an object {key_finding, summary, title, source} or a string
+                        let keyFinding = '';
+                        let summaryLines = '';
+                        let title = '';
+                        let source = 'Unknown';
+                        let isNumeric = false;
+                        if (typeof s === 'object') {
+                            keyFinding = s.key_finding || '';
+                            summaryLines = s.summary || '';
+                            title = s.title || keyFinding;
+                            source = s.source || 'Unknown';
+                            isNumeric = !!s.is_numeric;
+                        } else {
+                            const sents = splitSentences(s);
+                            keyFinding = sents[0] || s;
+                            summaryLines = sents.slice(0,2).join(' ') || s;
+                            title = keyFinding;
+                        }
+
+                        // enforce key finding length 10-15 words (trim to 12 words)
+                        const kwords = keyFinding.split(/\s+/).filter(Boolean);
+                        if (kwords.length > 15) keyFinding = kwords.slice(0,15).join(' ') + '...';
+                        else if (kwords.length < 8) keyFinding = kwords.slice(0,12).join(' ');
+
+                        // ensure summary is reasonably long; if short, pad by taking more words from original text
+                        const swords = summaryLines.split(/\s+/).filter(Boolean);
+                        if (swords.length < 50) {
+                            // try to expand by repeating the summary (fallback) or leaving as-is
+                            // best-effort: keep as-is since server attempts to produce 50-60 words
+                        }
+
+                        const relevance = `Relevant to ${escapeHtml(domainName)} readers.`;
+
+                        out += `
+                            <div class="mt-4 border rounded-lg p-4 bg-white">
+                                <h3 class="font-semibold text-gray-800">Article ${idx+1}: ${escapeHtml((title || '').slice(0,120))}</h3>
+                                <div class="text-sm text-gray-600 mb-2">Source/Publication: <span class="font-medium">${escapeHtml(source)}</span></div>
+                                <div><strong>Key Finding/Thesis:</strong> ${escapeHtml(keyFinding)}</div>
+                                <div class="mt-2"><strong>Summary (50-60 words):</strong>
+                                    <p class="mt-1 text-gray-700">${escapeHtml(summaryLines)}</p>
+                                    ${isNumeric ? '<p class="mt-1 text-sm italic text-gray-500">Numeric data detected and removed from the article (tables/prices). Summary reflects textual context.</p>' : ''}
+                                </div>
+                                <div class="mt-2 text-sm text-gray-600"><strong>Relevance:</strong> ${escapeHtml(relevance)}</div>
+                            </div>`;
+                    });
+
+                    out += `</div>`;
+                    return out;
+                }
+
+                const articlesHtml = renderArticles(result.per_article_summaries, categories);
+                summaryOutput.innerHTML = articlesHtml;
+                
+                // Enable chat
+                document.getElementById('chat-input').disabled = false;
+                document.getElementById('chat-submit').disabled = false;
+                document.getElementById('chat-window').innerHTML = `<div class="text-green-600 italic text-sm text-center">Your feed is ready. You can now ask questions.</div>`;
+                isFeedBuilt = true;
+
+            } catch (error) {
+                console.error("Error building feed:", error);
+                summaryOutput.innerHTML = `<p class="text-red-500"><b>Error:</b> ${error.message}</p>`;
+            } finally {
+                buildBtn.disabled = false;
+                buildBtn.innerHTML = '<span>Build & Analyze My Feed</span>';
+            }
+        }
+
+        async function askQuestion() {
+            const chatInput = document.getElementById('chat-input');
+            const chatSubmit = document.getElementById('chat-submit');
+            const chatWindow = document.getElementById('chat-window');
+            const question = chatInput.value;
+
+            if (!question || !isFeedBuilt) return;
+
+            // Add user's question to chat
+            chatWindow.innerHTML += `<div class="text-right"><span class="inline-block bg-blue-500 text-white rounded-lg px-4 py-2 text-sm">${question}</span></div>`;
+            chatInput.value = '';
+            chatSubmit.disabled = true;
+            
+            // Show loading
+            chatWindow.innerHTML += `<div id="loading-answer" class="text-left"><span class="inline-block bg-gray-200 text-gray-500 rounded-lg px-4 py-2 text-sm">Thinking...</span></div>`;
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to bottom
+
+            try {
+                const response = await fetch(`${API_URL}/ask-my-feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Add AI's answer to chat
+                document.getElementById('loading-answer').remove(); // Remove "Thinking..."
+                chatWindow.innerHTML += `<div class="text-left"><pre class="inline-block bg-gray-200 text-gray-700 rounded-lg px-4 py-2 text-sm whitespace-pre-wrap font-sans">${result.answer}</pre></div>`;
+
+            } catch (error) {
+                console.error("Error asking question:", error);
+                document.getElementById('loading-answer').remove();
+                chatWindow.innerHTML += `<div class="text-left"><span class="inline-block bg-red-100 text-red-700 rounded-lg px-4 py-2 text-sm">${error.message}</span></div>`;
+            } finally {
+                chatSubmit.disabled = false;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

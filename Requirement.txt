@@ -1,0 +1,21 @@
+#Flask Backend
+
+flask
+flask-cors
+
+#Data Pipeline
+
+requests
+beautifulsoup4
+feedparser
+
+#GenAI & RAG (LangChain)
+
+langchain
+langchain-core
+langchain-google-genai
+langchain-community
+langchain-text-splitters
+faiss-cpu
+sentence-transformers
+torch
