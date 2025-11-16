@@ -335,15 +335,19 @@ def build_and_summarize():
         data = request.get_json()
         categories = data.get('categories')
 
-        # Default to 2 articles per feed unless overridden
-        articles_per_feed = int(data.get('articles_per_feed', 2))
-        max_articles = data.get('max_articles')
-        max_articles = int(max_articles) if max_articles is not None else None
-        # Default to 4 feeds per category unless overridden
-        max_feeds = int(data.get('max_feeds', 4))
-
         if not categories:
             return jsonify({"error": "No categories provided."}), 400
+
+        # Calculate articles per feed and max articles based on number of categories
+        # Goal: Show 5 articles per selected category
+        num_categories = len(categories)
+        articles_per_feed = int(data.get('articles_per_feed', 5))  # 5 articles per feed
+        max_articles = articles_per_feed * num_categories  # 5 × number of categories
+        
+        print(f"Building feed for {num_categories} categories: will fetch up to {max_articles} total articles (5 per category)")
+        
+        # Default to 4 feeds per category unless overridden
+        max_feeds = int(data.get('max_feeds', 4))
 
         # --- Phase 1: Fetch ---
         print(f"Fetching articles for: {categories}")

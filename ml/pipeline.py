@@ -155,12 +155,20 @@ def fetch_articles_for_categories(categories, articles_per_feed=5, max_articles=
             continue
             
         print(f"\nProcessing category: {category}")
+        category_article_count = 0  # Track articles per category
+        articles_per_category = 5  # Limit to 5 articles per category
+        
         # Optionally limit number of feeds per category
         feed_list = CATEGORY_FEEDS[category]
         if max_feeds is not None:
             feed_list = feed_list[:max_feeds]
 
         for feed_url in feed_list:
+            # If we've already got 5 articles for this category, move to next category
+            if category_article_count >= articles_per_category:
+                print(f"  Reached {articles_per_category} articles for {category}, moving to next category")
+                break
+            
             # Simple fix for potential typo in Business feed
             if "httpscsv.com" in feed_url:
                 print(f"  Skipping invalid feed URL: {feed_url}")
@@ -178,6 +186,10 @@ def fetch_articles_for_categories(categories, articles_per_feed=5, max_articles=
             for entry in feed.entries[:articles_per_feed]:
                 if not hasattr(entry, 'link') or not hasattr(entry, 'title'):
                     continue
+                
+                # If we've got enough articles for this category, skip rest of feed
+                if category_article_count >= articles_per_category:
+                    break
                 print(f"    Scraping: {entry.title}")
                 scraped = scrape_article_text(entry.link)
 
@@ -211,7 +223,8 @@ def fetch_articles_for_categories(categories, articles_per_feed=5, max_articles=
                     }
 
                     all_article_texts.append(article_obj)
-                    print(f"      ...Success, article added ({len(all_article_texts)} total)")
+                    category_article_count += 1  # Increment counter for this category
+                    print(f"      ...Success, article added ({len(all_article_texts)} total, {category_article_count}/5 for {category})")
                 else:
                     # Try fallback: use RSS entry summary or content if scraping fails
                     fallback_text = None
@@ -251,25 +264,13 @@ def fetch_articles_for_categories(categories, articles_per_feed=5, max_articles=
                                 'fallback_from_rss': True
                             }
                             all_article_texts.append(article_obj)
-                            print(f"      ...Fallback summary used, article added ({len(all_article_texts)} total)")
+                            category_article_count += 1  # Increment counter for this category
+                            print(f"      ...Fallback summary used, article added ({len(all_article_texts)} total, {category_article_count}/5 for {category})")
                         else:
                             print(f"      ...Fallback summary too short or numeric for {entry.title}")
 
-                # If we've reached the requested max_articles cap, stop early
-                if max_articles is not None and len(all_article_texts) >= max_articles:
-                    print(f"Reached max_articles={max_articles}, stopping fetch.")
-                    break
-
-                # Be polite
-                time.sleep(0.2)
-
-            # If cap reached, break out of feed loop and category loop
-            if max_articles is not None and len(all_article_texts) >= max_articles:
-                break
-
-        # If cap reached, break out of category loop
-        if max_articles is not None and len(all_article_texts) >= max_articles:
-            break
+            # Be polite
+            time.sleep(0.2)
 
     print(f"\nFinished fetching. Total articles scraped: {len(all_article_texts)}")
     return all_article_texts

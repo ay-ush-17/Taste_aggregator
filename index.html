@@ -94,6 +94,7 @@
             <button id="build-feed-btn" onclick="buildFeed()" class="w-full bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition-all font-semibold text-lg flex items-center justify-center">
                 <span>Build & Analyze My Feed</span>
             </button>
+            <p id="category-count" class="text-slate-500 text-sm mt-3 text-center">Select categories above to see article count</p>
             </div>
         </div>
 
@@ -192,6 +193,18 @@
                     }
                     const checked = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(x => x.value);
                     saveSelectedCategories(checked);
+                    
+                    // Update category count display
+                    const countEl = document.getElementById('category-count');
+                    if (checked.length > 0) {
+                        const articlesPerCategory = 5;
+                        const totalArticles = checked.length * articlesPerCategory;
+                        countEl.textContent = `Selected: ${checked.length} category(ies) → You will get ${totalArticles} articles (${articlesPerCategory} per category)`;
+                        countEl.className = 'text-slate-600 text-sm mt-3 text-center font-medium';
+                    } else {
+                        countEl.textContent = 'Select categories above to see article count';
+                        countEl.className = 'text-slate-500 text-sm mt-3 text-center';
+                    }
                 });
             });
         }
@@ -258,8 +271,8 @@
 
                     let out = `<div><h3 class="text-2xl font-bold text-slate-800 mb-6">Article Findings: <span class="text-slate-600">${escapeHtml(domainName)}</span></h3>`;
 
-                    // show only top 5
-                    summaries.slice(0,5).forEach((s, idx) => {
+                    // show all articles
+                    summaries.forEach((s, idx) => {
                         // s may be an object {key_finding, summary, title, source} or a string
                         let keyFinding = '';
                         let summaryLines = '';
