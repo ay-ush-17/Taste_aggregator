@@ -11,7 +11,6 @@ import json
 # A mapping of our frontend categories to a list of RSS feeds.
 CATEGORY_FEEDS = {
     "AI": [
-        "https://www.reddit.com/r/MachineLearning/.rss",
         "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
         "https://www.brookings.edu/topic/artificial-intelligence/feed/",
         "https://thenewstack.io/feed/"
@@ -85,11 +84,26 @@ def scrape_article_text(url):
             return None # Failed to fetch
 
         soup = BeautifulSoup(response.content, 'html.parser')
-        main_content = soup.find('article') or soup.find('main') or soup
+        
+        # Try multiple strategies to find the main content
+        main_content = soup.find('article') or soup.find('main') or soup.find('div', {'class': re.compile(r'content|body|post|entry', re.I)})
+        if not main_content:
+            main_content = soup
 
+        # Remove script, style, and nav elements
+        for script in main_content(['script', 'style', 'nav', 'footer']):
+            script.decompose()
+
+        # Try to get paragraphs
         paragraphs = main_content.find_all('p')
+        
+        # If very few paragraphs, try divs with text
+        if len(paragraphs) < 3:
+            paragraphs = main_content.find_all(['p', 'div'], limit=50)  # Increased from 20
+            paragraphs = [p for p in paragraphs if len(p.get_text().strip()) > 20]
+        
         if not paragraphs:
-            print(f"  Scraper: no <p> paragraphs found for {url}")
+            print(f"  Scraper: no content found for {url}")
             return None
 
         article_text = ' '.join([p.get_text() for p in paragraphs])
@@ -104,7 +118,7 @@ def scrape_article_text(url):
 
         article_text = cleaned
 
-        if len(article_text) < 300: # Filter out short snippets
+        if len(article_text) < 200: # Filter out very short snippets (relaxed from 300)
             print(f"  Scraper: scraped text too short after cleaning ({len(article_text)} chars) for {url}")
             return None
 
@@ -202,7 +216,11 @@ def fetch_articles_for_categories(categories, articles_per_feed=5, max_articles=
                     # Try fallback: use RSS entry summary or content if scraping fails
                     fallback_text = None
                     try:
-                        fallback_text = getattr(entry, 'summary', None)
+                        # Combine title + summary for better context on short RSS entries
+                        title_text = getattr(entry, 'title', '')
+                        summary_text = getattr(entry, 'summary', '')
+                        fallback_text = (title_text + ' ' + summary_text).strip() if (title_text or summary_text) else None
+                        
                         if not fallback_text and 'content' in entry:
                             # entry.content can be a list of dicts
                             content = entry.get('content')
@@ -213,7 +231,7 @@ def fetch_articles_for_categories(categories, articles_per_feed=5, max_articles=
 
                     if fallback_text:
                         cleaned = remove_numeric_blocks(re.sub(r'\s+', ' ', fallback_text).strip())
-                        if len(cleaned) >= min(200, min_chars // 2):
+                        if len(cleaned) >= 100:  # Very relaxed threshold for RSS fallback
                             title = getattr(entry, 'title', None)
                             link = getattr(entry, 'link', None)
                             source = None

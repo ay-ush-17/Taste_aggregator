@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InsightFeed Project 2.0</title>
+        <title>Taste: AI News Analyst</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Simple loading spinner */
@@ -26,83 +26,181 @@
             word-break: normal;
         }
         .article-summaries { padding-left: 1rem; }
+        /* Chat message styling */
+        .chat-message {
+            display: flex;
+            animation: slideIn 0.3s ease-in-out;
+        }
+        .chat-message.text-right {
+            justify-content: flex-end;
+        }
+        .chat-message.text-left {
+            justify-content: flex-start;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans p-4 md:p-8">
+<body class="font-sans min-h-screen" style="background-image: url('images/white-abstract-background-3d-paper-style/3253510.jpg'); background-attachment: fixed; background-size: cover; background-position: center;">
+    
+    <!-- Header -->
+    <div class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-6 flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-slate-900">Taste</h1>
+            <p class="text-slate-600">AI-Powered News Curator</p>
+        </div>
+    </div>
 
-    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-6 md:p-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">InsightFeed: Your Personal AI Analyst</h1>
+    <div class="bg-white bg-opacity-40 min-h-screen">
+        <div class="max-w-5xl mx-auto px-4 md:px-8">
 
         <!-- Section 1: Category Selection -->
-        <div class="mb-6">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Phase 1: Select Your Interests</h2>
-            <p class="text-gray-600 mb-4">Choose the categories you want to include in your aggregated news brief.</p>
-            
-            <!-- Category Checkboxes -->
-            <div id="category-list" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+        <div class="bg-white rounded-none shadow-none border-none py-8">
+            <div class="bg-white px-0 py-0 border-none">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Select Your Interests</h2>
+            </div>
+            <div class="p-0">
+                <!-- Category Checkboxes -->
+                <div id="category-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <!-- Categories -->
-                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                    <input type="checkbox" name="category" value="AI" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
-                    <span class="font-medium text-gray-700">Artificial Intelligence</span>
+                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
+                    <input type="checkbox" name="category" value="AI" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
+                    <span class="font-medium text-slate-700">Artificial Intelligence</span>
                 </label>
-                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                    <input type="checkbox" name="category" value="Web3" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
-                    <span class="font-medium text-gray-700">Web3 & Crypto</span>
+                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
+                    <input type="checkbox" name="category" value="Web3" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
+                    <span class="font-medium text-slate-700">Web3 & Crypto</span>
                 </label>
-                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                    <input type="checkbox" name="category" value="StockMarket" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
-                    <span class="font-medium text-gray-700">Stock Market</span>
+                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
+                    <input type="checkbox" name="category" value="StockMarket" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
+                    <span class="font-medium text-slate-700">Stock Market</span>
                 </label>
-                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                    <input type="checkbox" name="category" value="Geopolitics" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
-                    <span class="font-medium text-gray-700">Geopolitics</span>
+                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
+                    <input type="checkbox" name="category" value="Geopolitics" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
+                    <span class="font-medium text-slate-700">Geopolitics</span>
                 </label>
-                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                    <input type="checkbox" name="category" value="Science" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
-                    <span class="font-medium text-gray-700">Science</span>
+                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
+                    <input type="checkbox" name="category" value="Science" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
+                    <span class="font-medium text-slate-700">Science</span>
                 </label>
-                <label class="flex items-center p-3 bg-gray-50 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 cursor-pointer">
-                    <input type="checkbox" name="category" value="Business" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3">
-                    <span class="font-medium text-gray-700">Business</span>
+                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
+                    <input type="checkbox" name="category" value="Business" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
+                    <span class="font-medium text-slate-700">Business</span>
                 </label>
             </div>
             
-            <button id="build-feed-btn" onclick="buildFeed()" class="w-full bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center">
+            <button id="build-feed-btn" onclick="buildFeed()" class="w-full bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition-all font-semibold text-lg flex items-center justify-center">
                 <span>Build & Analyze My Feed</span>
             </button>
+            </div>
         </div>
 
         <!-- Section 2: Aggregated Information -->
-        <div class="mb-6">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Phase 2: Your Aggregated Brief</h2>
-            <div id="summary-output" class="border rounded-lg p-4 bg-gray-50 min-h-[10rem] space-y-2">
-                <p class="text-gray-500">Your aggregated summary will appear here after you build your feed...</p>
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden my-8">
+            <div class="bg-white px-6 py-4 border-b border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-900">Your Aggregated Brief</h2>
+                <p class="text-slate-600 text-sm mt-1">AI-generated summary of the latest articles</p>
+            </div>
+            <div class="p-6 md:p-8">
+                <div id="summary-output" class="min-h-[15rem] space-y-4">
+                    <p class="text-slate-500 text-center py-8">Select categories and click "Build & Analyze" to generate your personalized brief...</p>
+                </div>
             </div>
         </div>
 
         <!-- Section 3: Chat with your Feed -->
-        <div>
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Phase 3: Ask Questions in Your Domain</h2>
-            <p class="text-gray-600 mb-4">Once your feed is built, you can ask questions based on the articles it fetched.</p>
-            
-            <!-- Chat Window -->
-            <div id="chat-window" class="border rounded-lg bg-gray-50 h-64 overflow-y-auto p-4 space-y-4 mb-4">
-                <div class="text-gray-500 italic text-sm text-center">Chat history will appear here...</div>
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden my-8 mb-16">
+            <div class="bg-white px-6 py-4 border-b border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-900">Ask Questions in Your Domain</h2>
+                <p class="text-slate-600 text-sm mt-1">Interact with your feed using natural language</p>
             </div>
-            
-            <!-- Chat Input -->
-            <div class="flex">
-                <input type="text" id="chat-input" placeholder="Ask a question about your feed..." class="flex-grow border-gray-300 rounded-l-lg p-3 focus:ring-blue-500 focus:border-blue-500" disabled>
-                <button id="chat-submit" onclick="askQuestion()" class="bg-green-500 text-white px-5 py-3 rounded-r-lg hover:bg-green-600 transition" disabled>
-                    Ask
-                </button>
+            <div class="p-6 md:p-8 space-y-4">
+                
+                <!-- Chat Window -->
+                <div id="chat-window" class="border-2 border-slate-200 rounded-lg bg-slate-50 h-96 overflow-y-auto p-4 space-y-3 font-medium">
+                    <div class="text-slate-400 italic text-sm text-center py-16">Chat history will appear here...</div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="flex gap-3">
+                    <input type="text" id="chat-input" placeholder="Ask a question about your feed..." class="flex-grow border-2 border-slate-300 rounded-lg p-4 text-base focus:border-slate-400 focus:ring-2 focus:ring-slate-200 focus:outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed" disabled>
+                    <button id="chat-submit" onclick="askQuestion()" class="bg-slate-700 text-white px-6 py-4 rounded-lg hover:bg-slate-800 transition-all font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" disabled>
+                        <span>Ask</span>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-slate-400 text-sm py-8 border-t border-slate-200 mt-12">
+            <p>Taste © 2025 | AI News Curator</p>
+        </div>
         </div>
     </div>
 
     <script>
         const API_URL = "http://127.0.0.1:5000";
         let isFeedBuilt = false;
+
+        // Persist selection to localStorage so page reloads (e.g., from dev server file changes)
+        function saveSelectedCategories(categories) {
+            try { localStorage.setItem('selected_categories', JSON.stringify(categories)); } catch(e) { /* ignore */ }
+        }
+
+        function restoreSelectedCategories() {
+            try {
+                const raw = localStorage.getItem('selected_categories');
+                if (!raw) return [];
+                const arr = JSON.parse(raw);
+                if (!Array.isArray(arr)) return [];
+                // check checkboxes and update label styles
+                arr.forEach(val => {
+                    const cb = document.querySelector(`input[name="category"][value="${val}"]`);
+                    if (cb) {
+                        cb.checked = true;
+                        const label = cb.closest('label');
+                        if (label) label.classList.add('bg-slate-100','border-slate-400');
+                    }
+                });
+                // Also render pills view
+                if (arr.length > 0) {
+                    const parent = document.getElementById('summary-output');
+                    let pills = document.getElementById('selected-categories-pills');
+                    if (!pills) {
+                        pills = document.createElement('div');
+                        pills.id = 'selected-categories-pills';
+                        pills.className = 'mt-2 mb-2 flex flex-wrap gap-2';
+                        parent.parentNode.insertBefore(pills, parent);
+                    }
+                    pills.innerHTML = arr.map(c => `<span class="px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-sm">${c}</span>`).join('');
+                }
+                return arr;
+            } catch(e) { return []; }
+        }
+
+        // wire checkbox change handlers to keep localStorage and visual state in sync
+        function wireCheckboxHandlers() {
+            const allCheckboxes = document.querySelectorAll('input[name="category"]');
+            allCheckboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const label = cb.closest('label');
+                    if (label) {
+                        if (cb.checked) label.classList.add('bg-slate-100','border-slate-400');
+                        else label.classList.remove('bg-slate-100','border-slate-400');
+                    }
+                    const checked = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(x => x.value);
+                    saveSelectedCategories(checked);
+                });
+            });
+        }
+
+        // restore selections immediately on load
+        document.addEventListener('DOMContentLoaded', () => {
+            restoreSelectedCategories();
+            wireCheckboxHandlers();
+        });
 
         async function buildFeed() {
             const buildBtn = document.getElementById('build-feed-btn');
@@ -111,23 +209,21 @@
             // Get selected categories
             const checkedBoxes = document.querySelectorAll('input[name="category"]:checked');
             if (checkedBoxes.length === 0) {
-                summaryOutput.innerHTML = '<p class="text-orange-500">Please select at least one category first.</p>';
+                summaryOutput.innerHTML = '<p class="text-slate-500 font-semibold">Please select at least one category first.</p>';
                 return;
             }
             const categories = Array.from(checkedBoxes).map(cb => cb.value);
+            // persist the chosen categories so a dev-server reload won't lose them
+            saveSelectedCategories(categories);
 
             // Set loading state
             summaryOutput.innerHTML = `
                 <div class="flex items-center justify-center p-8">
-                    <div class="spinner mr-3"></div>
-                    <span class="text-gray-500">Building feed, scraping articles, and generating summary... This may take a minute.</span>
+                    <div class="spinner mr-4"></div>
+                    <span class="text-slate-600 font-medium">Building feed, scraping articles, and generating summary...</span>
                 </div>`;
             buildBtn.disabled = true;
-            buildBtn.innerHTML = `
-                <div class="spinner mr-3"></div>
-                <span>Building...</span>`;
-
-            try {
+                buildBtn.innerHTML = '<span>Build & Analyze My Feed</span>';            try {
                 const response = await fetch(`${API_URL}/build-and-summarize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -140,6 +236,7 @@
                 }
 
                 const result = await response.json();
+                console.log('build-and-summarize result:', result);
 
                 // Helper to escape text when we must render plain text
                 function escapeHtml(text) {
@@ -153,13 +250,13 @@
 
                 // Render the per-article findings in the user's requested layout for all articles
                 function renderArticles(summaries, categories) {
-                    if (!summaries || summaries.length === 0) return '<p class="text-gray-500">No articles returned.</p>';
-                    const domainName = categories && categories.length ? categories.join(', ') : 'Your Domain Name Here';
+                    if (!summaries || summaries.length === 0) return '<p class="text-slate-500">No articles returned.</p>';
+                    const domainName = categories && categories.length ? categories.join(', ') : 'Your Domain';
                     function splitSentences(text) {
                         return text.split(/(?<=[.!?])\s+/).filter(Boolean);
                     }
 
-                    let out = `<div class="mt-6"><h2 class="text-xl font-bold">📚 Article Findings: ${escapeHtml(domainName)}</h2>`;
+                    let out = `<div><h3 class="text-2xl font-bold text-slate-800 mb-6">Article Findings: <span class="text-slate-600">${escapeHtml(domainName)}</span></h3>`;
 
                     // show only top 5
                     summaries.slice(0,5).forEach((s, idx) => {
@@ -182,30 +279,39 @@
                             title = keyFinding;
                         }
 
-                        // enforce key finding length 10-15 words (trim to 12 words)
-                        const kwords = keyFinding.split(/\s+/).filter(Boolean);
-                        if (kwords.length > 15) keyFinding = kwords.slice(0,15).join(' ') + '...';
-                        else if (kwords.length < 8) keyFinding = kwords.slice(0,12).join(' ');
+                        // Don't truncate key finding - show full text
+                        // const kwords = keyFinding.split(/\s+/).filter(Boolean);
+                        // if (kwords.length > 15) keyFinding = kwords.slice(0,15).join(' ') + '...';
+                        // else if (kwords.length < 8) keyFinding = kwords.slice(0,12).join(' ');
 
-                        // ensure summary is reasonably long; if short, pad by taking more words from original text
-                        const swords = summaryLines.split(/\s+/).filter(Boolean);
-                        if (swords.length < 50) {
-                            // try to expand by repeating the summary (fallback) or leaving as-is
-                            // best-effort: keep as-is since server attempts to produce 50-60 words
-                        }
+                        // Ensure summary is complete - don't truncate
+                        // const swords = summaryLines.split(/\s+/).filter(Boolean);
+                        // if (swords.length < 50) {
+                        //     // Server already provides 80+ word summaries
+                        // }
 
                         const relevance = `Relevant to ${escapeHtml(domainName)} readers.`;
 
                         out += `
-                            <div class="mt-4 border rounded-lg p-4 bg-white">
-                                <h3 class="font-semibold text-gray-800">Article ${idx+1}: ${escapeHtml((title || '').slice(0,120))}</h3>
-                                <div class="text-sm text-gray-600 mb-2">Source/Publication: <span class="font-medium">${escapeHtml(source)}</span></div>
-                                <div><strong>Key Finding/Thesis:</strong> ${escapeHtml(keyFinding)}</div>
-                                <div class="mt-2"><strong>Summary (50-60 words):</strong>
-                                    <p class="mt-1 text-gray-700">${escapeHtml(summaryLines)}</p>
-                                    ${isNumeric ? '<p class="mt-1 text-sm italic text-gray-500">Numeric data detected and removed from the article (tables/prices). Summary reflects textual context.</p>' : ''}
+                            <div class="article-card mt-5 border-2 border-slate-200 rounded-lg p-5 bg-white hover:border-slate-300">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <div class="flex-grow">
+                                        <h3 class="text-lg font-bold text-slate-800">Article ${idx+1}: ${escapeHtml((title || '').slice(0,100))}</h3>
+                                        <div class="text-sm text-slate-600 mt-1"><span class="font-semibold text-slate-700">${escapeHtml(source)}</span></div>
+                                    </div>
                                 </div>
-                                <div class="mt-2 text-sm text-gray-600"><strong>Relevance:</strong> ${escapeHtml(relevance)}</div>
+                                <div class="space-y-3 ml-9">
+                                    <div>
+                                        <p class="font-semibold text-slate-700">Key Finding:</p>
+                                        <p class="text-slate-700 mt-1">${escapeHtml(keyFinding)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-700">Summary:</p>
+                                        <p class="text-slate-700 mt-1">${escapeHtml(summaryLines)}</p>
+                                        ${isNumeric ? '<p class="mt-2 text-sm italic text-slate-500">Note: Numeric data/tables removed from source</p>' : ''}
+                                    </div>
+                                    <div class="text-sm text-slate-600 pt-2 border-t border-slate-200">${escapeHtml(relevance)}</div>
+                                </div>
                             </div>`;
                     });
 
@@ -213,21 +319,68 @@
                     return out;
                 }
 
-                const articlesHtml = renderArticles(result.per_article_summaries, categories);
+                // Prefer structured per-article summaries; fall back to server-provided HTML or plain summary
+                let articlesHtml = '';
+                try {
+                    if (result && Array.isArray(result.per_article_summaries) && result.per_article_summaries.length > 0) {
+                        articlesHtml = renderArticles(result.per_article_summaries, categories);
+                    } else if (result && result.per_article_html) {
+                        // server already provided a safe HTML list
+                        articlesHtml = result.per_article_html;
+                    } else if (result && result.summary_html) {
+                        articlesHtml = result.summary_html;
+                    } else if (result && result.summary) {
+                        articlesHtml = `<div class="p-4">${escapeHtml(result.summary)}</div>`;
+                    } else {
+                        articlesHtml = '<p class="text-gray-500">No summary returned from server.</p>';
+                    }
+                } catch (e) {
+                    console.error('Error deciding which summary to render', e, result);
+                    articlesHtml = '<p class="text-red-500">Failed to render summary (see console).</p>';
+                }
+
                 summaryOutput.innerHTML = articlesHtml;
                 
-                // Enable chat
                 document.getElementById('chat-input').disabled = false;
                 document.getElementById('chat-submit').disabled = false;
-                document.getElementById('chat-window').innerHTML = `<div class="text-green-600 italic text-sm text-center">Your feed is ready. You can now ask questions.</div>`;
+                document.getElementById('chat-window').innerHTML = `<div class="text-slate-600 font-semibold text-center py-12">Your feed is ready. You can now ask questions!</div>`;
                 isFeedBuilt = true;
+
+                // Visually mark selected category labels so the user sees what they selected
+                try {
+                    const allCheckboxes = document.querySelectorAll('input[name="category"]');
+                    allCheckboxes.forEach(cb => {
+                        const label = cb.closest('label');
+                        if (!label) return;
+                        // base classes for checked look
+                        if (cb.checked) {
+                            label.classList.add('bg-slate-100','border-slate-400');
+                        } else {
+                            label.classList.remove('bg-slate-100','border-slate-400');
+                        }
+                    });
+
+                    // Show a small list of selected categories above the summary for clarity
+                    const categoryPillsId = 'selected-categories-pills';
+                    let pills = document.getElementById(categoryPillsId);
+                    if (!pills) {
+                        pills = document.createElement('div');
+                        pills.id = categoryPillsId;
+                        pills.className = 'mt-2 mb-2 flex flex-wrap gap-2';
+                        const parent = document.getElementById('summary-output');
+                        parent.parentNode.insertBefore(pills, parent);
+                    }
+                    pills.innerHTML = categories.map(c => `<span class="px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-sm">${c}</span>`).join('');
+                } catch (e) {
+                    console.warn('Failed to mark selected categories visually', e);
+                }
 
             } catch (error) {
                 console.error("Error building feed:", error);
                 summaryOutput.innerHTML = `<p class="text-red-500"><b>Error:</b> ${error.message}</p>`;
             } finally {
                 buildBtn.disabled = false;
-                buildBtn.innerHTML = '<span>Build & Analyze My Feed</span>';
+                buildBtn.innerHTML = '<span>🚀</span> <span>Build & Analyze My Feed</span>';
             }
         }
 
@@ -239,14 +392,17 @@
 
             if (!question || !isFeedBuilt) return;
 
-            // Add user's question to chat
-            chatWindow.innerHTML += `<div class="text-right"><span class="inline-block bg-blue-500 text-white rounded-lg px-4 py-2 text-sm">${question}</span></div>`;
+            // Clear placeholder if first message
+            if (chatWindow.innerHTML.includes('Chat history will appear here') || chatWindow.innerHTML.includes('Your feed is ready')) {
+                chatWindow.innerHTML = '';
+            }
+
+            chatWindow.innerHTML += `<div class="chat-message text-right mb-3"><span class="inline-block bg-slate-700 text-white rounded-xl px-5 py-3 text-sm max-w-xs break-words">${chatInput.value}</span></div>`;
             chatInput.value = '';
             chatSubmit.disabled = true;
             
-            // Show loading
-            chatWindow.innerHTML += `<div id="loading-answer" class="text-left"><span class="inline-block bg-gray-200 text-gray-500 rounded-lg px-4 py-2 text-sm">Thinking...</span></div>`;
-            chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to bottom
+            chatWindow.innerHTML += `<div id="loading-answer" class="chat-message text-left mb-3"><span class="inline-block bg-slate-100 text-slate-700 rounded-xl px-5 py-3 text-sm border border-slate-300">Thinking...</span></div>`;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
             try {
                 const response = await fetch(`${API_URL}/ask-my-feed`, {
@@ -262,19 +418,25 @@
 
                 const result = await response.json();
                 
-                // Add AI's answer to chat
-                document.getElementById('loading-answer').remove(); // Remove "Thinking..."
-                chatWindow.innerHTML += `<div class="text-left"><pre class="inline-block bg-gray-200 text-gray-700 rounded-lg px-4 py-2 text-sm whitespace-pre-wrap font-sans">${result.answer}</pre></div>`;
+                document.getElementById('loading-answer').remove();
+                chatWindow.innerHTML += `<div class="chat-message text-left mb-3"><div class="inline-block bg-white text-slate-800 rounded-xl px-5 py-3 text-sm max-w-lg break-words border border-slate-300"><p class="font-semibold text-slate-700 mb-2">Assistant</p><p>${result.answer}</p></div></div>`;
 
             } catch (error) {
                 console.error("Error asking question:", error);
                 document.getElementById('loading-answer').remove();
-                chatWindow.innerHTML += `<div class="text-left"><span class="inline-block bg-red-100 text-red-700 rounded-lg px-4 py-2 text-sm">${error.message}</span></div>`;
+                chatWindow.innerHTML += `<div class="chat-message text-left mb-3"><span class="inline-block bg-red-50 text-red-700 rounded-xl px-5 py-3 text-sm border border-red-200">Error: ${error.message}</span></div>`;
             } finally {
                 chatSubmit.disabled = false;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
             }
         }
+
+        // Allow Enter key to send message
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !document.getElementById('chat-submit').disabled) {
+                askQuestion();
+            }
+        });
     </script>
 </body>
 </html>
