@@ -1,145 +1,272 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Taste: AI News Analyst</title>
+    <title>Taste: AI News Analyst</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        glass: "rgba(30, 41, 59, 0.7)",
+                        glassBorder: "rgba(255, 255, 255, 0.08)"
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Simple loading spinner */
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Spinner */
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3b82f6;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #818cf8;
             border-radius: 50%;
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        /* Summary rendering fixes */
-        #summary-output {
-            white-space: normal; /* don't preserve literal newlines */
-            text-align: left;    /* avoid justification spacing */
-            overflow-wrap: break-word;
-            word-break: normal;
-        }
-        .article-summaries { padding-left: 1rem; }
-        /* Chat message styling */
-        .chat-message {
-            display: flex;
-            animation: slideIn 0.3s ease-in-out;
-        }
-        .chat-message.text-right {
-            justify-content: flex-end;
-        }
-        .chat-message.text-left {
-            justify-content: flex-start;
-        }
-        @keyframes slideIn {
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Animations */
+        @keyframes fadeUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .fade-up { animation: fadeUp 0.5s ease-out forwards; }
+
+        /* Checkbox Tile Logic */
+        .category-checkbox:checked + div {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: #6366f1;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        }
+        .category-checkbox:checked + div .check-icon { opacity: 1; transform: scale(1); }
+        
     </style>
 </head>
-<body class="font-sans min-h-screen" style="background-image: url('images/white-abstract-background-3d-paper-style/3253510.jpg'); background-attachment: fixed; background-size: cover; background-position: center;">
-    
-    <!-- Header -->
-    <div class="bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 md:px-8 py-6 flex items-center justify-between">
-            <h1 class="text-3xl font-bold text-slate-900">Taste</h1>
-            <p class="text-slate-600">AI-Powered News Curator</p>
-        </div>
-    </div>
+<body class="min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
-    <div class="bg-white bg-opacity-40 min-h-screen">
-        <div class="max-w-5xl mx-auto px-4 md:px-8">
-
-        <!-- Section 1: Category Selection -->
-        <div class="bg-white rounded-none shadow-none border-none py-8">
-            <div class="bg-white px-0 py-0 border-none">
-                <h2 class="text-2xl font-bold text-slate-900 mb-6">Select Your Interests</h2>
+    <nav class="sticky top-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-xl">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <span class="text-white font-bold text-lg">T</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">Taste</h1>
             </div>
-            <div class="p-0">
-                <!-- Category Checkboxes -->
-                <div id="category-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                <!-- Categories -->
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
-                    <input type="checkbox" name="category" value="AI" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
-                    <span class="font-medium text-slate-700">Artificial Intelligence</span>
-                </label>
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
-                    <input type="checkbox" name="category" value="Web3" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
-                    <span class="font-medium text-slate-700">Web3 & Crypto</span>
-                </label>
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
-                    <input type="checkbox" name="category" value="StockMarket" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
-                    <span class="font-medium text-slate-700">Stock Market</span>
-                </label>
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
-                    <input type="checkbox" name="category" value="Geopolitics" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
-                    <span class="font-medium text-slate-700">Geopolitics</span>
-                </label>
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
-                    <input type="checkbox" name="category" value="Science" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
-                    <span class="font-medium text-slate-700">Science</span>
-                </label>
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all">
-                    <input type="checkbox" name="category" value="Business" class="h-5 w-5 text-slate-600 rounded focus:ring-2 focus:ring-slate-400 mr-3">
-                    <span class="font-medium text-slate-700">Business</span>
-                </label>
-            </div>
-            
-            <button id="build-feed-btn" onclick="buildFeed()" class="w-full bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition-all font-semibold text-lg flex items-center justify-center">
-                <span>Build & Analyze My Feed</span>
-            </button>
-            <p id="category-count" class="text-slate-500 text-sm mt-3 text-center">Select categories above to see article count</p>
+            <div class="flex items-center gap-2">
+                <div class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-widest">System Online</p>
             </div>
         </div>
+    </nav>
 
-        <!-- Section 2: Aggregated Information -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden my-8">
-            <div class="bg-white px-6 py-4 border-b border-slate-200">
-                <h2 class="text-2xl font-bold text-slate-900">Your Aggregated Brief</h2>
-                <p class="text-slate-600 text-sm mt-1">AI-generated summary of the latest articles</p>
+    <main class="max-w-5xl mx-auto px-4 md:px-8 py-12 space-y-12">
+
+        <div class="fade-up">
+            <div class="text-center mb-10">
+                <h2 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-violet-300 mb-4">
+                    Curate Your Intelligence
+                </h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto">
+                    Select your domains. Our AI agents will scrape, analyze, and summarize the noise into signal.
+                </p>
             </div>
-            <div class="p-6 md:p-8">
-                <div id="summary-output" class="min-h-[15rem] space-y-4">
-                    <p class="text-slate-500 text-center py-8">Select categories and click "Build & Analyze" to generate your personalized brief...</p>
+
+            <div class="bg-glass border border-glassBorder rounded-2xl p-1 shadow-2xl">
+                <div id="category-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-6">
+                    <label class="relative cursor-pointer group">
+                        <input type="checkbox" name="category" value="AI" class="category-checkbox sr-only">
+                        <div class="flex items-center p-4 rounded-xl bg-slate-800/50 border border-white/5 hover:bg-slate-800 transition-all duration-300 h-full">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center mr-4 group-hover:bg-indigo-500/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-semibold text-slate-200">Artificial Intelligence</span>
+                                <span class="text-xs text-slate-500">LLMs, Neural Networks</span>
+                            </div>
+                            <div class="check-icon w-6 h-6 bg-indigo-500 rounded-full text-white flex items-center justify-center opacity-0 transform scale-50 transition-all duration-300 absolute top-3 right-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="relative cursor-pointer group">
+                        <input type="checkbox" name="category" value="Web3" class="category-checkbox sr-only">
+                        <div class="flex items-center p-4 rounded-xl bg-slate-800/50 border border-white/5 hover:bg-slate-800 transition-all duration-300 h-full">
+                            <div class="w-10 h-10 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center mr-4 group-hover:bg-violet-500/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-semibold text-slate-200">Web3 & Crypto</span>
+                                <span class="text-xs text-slate-500">DeFi, Blockchain</span>
+                            </div>
+                            <div class="check-icon w-6 h-6 bg-indigo-500 rounded-full text-white flex items-center justify-center opacity-0 transform scale-50 transition-all duration-300 absolute top-3 right-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="relative cursor-pointer group">
+                        <input type="checkbox" name="category" value="StockMarket" class="category-checkbox sr-only">
+                        <div class="flex items-center p-4 rounded-xl bg-slate-800/50 border border-white/5 hover:bg-slate-800 transition-all duration-300 h-full">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mr-4 group-hover:bg-emerald-500/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-semibold text-slate-200">Stock Market</span>
+                                <span class="text-xs text-slate-500">Trends, Analysis</span>
+                            </div>
+                            <div class="check-icon w-6 h-6 bg-indigo-500 rounded-full text-white flex items-center justify-center opacity-0 transform scale-50 transition-all duration-300 absolute top-3 right-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="relative cursor-pointer group">
+                        <input type="checkbox" name="category" value="Geopolitics" class="category-checkbox sr-only">
+                        <div class="flex items-center p-4 rounded-xl bg-slate-800/50 border border-white/5 hover:bg-slate-800 transition-all duration-300 h-full">
+                            <div class="w-10 h-10 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center mr-4 group-hover:bg-orange-500/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-semibold text-slate-200">Geopolitics</span>
+                                <span class="text-xs text-slate-500">Global Relations</span>
+                            </div>
+                            <div class="check-icon w-6 h-6 bg-indigo-500 rounded-full text-white flex items-center justify-center opacity-0 transform scale-50 transition-all duration-300 absolute top-3 right-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="relative cursor-pointer group">
+                        <input type="checkbox" name="category" value="Science" class="category-checkbox sr-only">
+                        <div class="flex items-center p-4 rounded-xl bg-slate-800/50 border border-white/5 hover:bg-slate-800 transition-all duration-300 h-full">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center mr-4 group-hover:bg-cyan-500/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-semibold text-slate-200">Science</span>
+                                <span class="text-xs text-slate-500">Discoveries</span>
+                            </div>
+                            <div class="check-icon w-6 h-6 bg-indigo-500 rounded-full text-white flex items-center justify-center opacity-0 transform scale-50 transition-all duration-300 absolute top-3 right-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="relative cursor-pointer group">
+                        <input type="checkbox" name="category" value="Business" class="category-checkbox sr-only">
+                        <div class="flex items-center p-4 rounded-xl bg-slate-800/50 border border-white/5 hover:bg-slate-800 transition-all duration-300 h-full">
+                            <div class="w-10 h-10 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center mr-4 group-hover:bg-pink-500/20 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-semibold text-slate-200">Business</span>
+                                <span class="text-xs text-slate-500">Markets, Startups</span>
+                            </div>
+                            <div class="check-icon w-6 h-6 bg-indigo-500 rounded-full text-white flex items-center justify-center opacity-0 transform scale-50 transition-all duration-300 absolute top-3 right-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="px-6 pb-6 pt-2 border-t border-white/5">
+                    <button id="build-feed-btn" onclick="buildFeed()" class="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-lg p-4 shadow-lg shadow-indigo-500/30 transition-all hover:shadow-indigo-500/50 hover:scale-[1.01] active:scale-[0.99]">
+                        <div class="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-700 -skew-x-12 -translate-x-full"></div>
+                        <span class="relative flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            Build & Analyze Feed
+                        </span>
+                    </button>
+                    <p id="category-count" class="text-slate-500 text-sm mt-4 text-center h-5">Select categories to begin</p>
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: Chat with your Feed -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden my-8 mb-16">
-            <div class="bg-white px-6 py-4 border-b border-slate-200">
-                <h2 class="text-2xl font-bold text-slate-900">Ask Questions in Your Domain</h2>
-                <p class="text-slate-600 text-sm mt-1">Interact with your feed using natural language</p>
+        <div class="bg-glass border border-glassBorder rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl fade-up" style="animation-delay: 0.1s;">
+            <div class="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        Intelligence Brief
+                    </h2>
+                </div>
+                <div class="flex gap-1">
+                    <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
+                </div>
             </div>
-            <div class="p-6 md:p-8 space-y-4">
+            <div class="p-6 md:p-8 bg-slate-900/30">
+                <div id="summary-output" class="min-h-[15rem] space-y-4 text-slate-300 leading-relaxed">
+                    <div class="flex flex-col items-center justify-center py-12 text-slate-500">
+                        <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <p>System ready. Initialize feed generation above.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-glass border border-glassBorder rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl fade-up mb-12" style="animation-delay: 0.2s;">
+            <div class="px-6 py-5 border-b border-white/5 bg-gradient-to-r from-indigo-900/20 to-transparent">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    Deep Dive
+                </h2>
+                <p class="text-slate-400 text-xs mt-0.5 ml-7">Ask specific questions about the generated brief.</p>
+            </div>
+            <div class="p-4 md:p-6 bg-slate-900/50">
                 
-                <!-- Chat Window -->
-                <div id="chat-window" class="border-2 border-slate-200 rounded-lg bg-slate-50 h-96 overflow-y-auto p-4 space-y-3 font-medium">
-                    <div class="text-slate-400 italic text-sm text-center py-16">Chat history will appear here...</div>
+                <div id="chat-window" class="rounded-xl bg-slate-950/50 border border-white/5 h-96 overflow-y-auto p-4 space-y-4 font-medium mb-4 shadow-inner">
+                    <div class="text-slate-600 italic text-sm text-center py-32 flex flex-col items-center">
+                        <span class="bg-slate-800/50 px-4 py-2 rounded-full text-xs">History empty</span>
+                    </div>
                 </div>
                 
-                <!-- Chat Input -->
-                <div class="flex gap-3">
-                    <input type="text" id="chat-input" placeholder="Ask a question about your feed..." class="flex-grow border-2 border-slate-300 rounded-lg p-4 text-base focus:border-slate-400 focus:ring-2 focus:ring-slate-200 focus:outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed" disabled>
-                    <button id="chat-submit" onclick="askQuestion()" class="bg-slate-700 text-white px-6 py-4 rounded-lg hover:bg-slate-800 transition-all font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" disabled>
+                <div class="relative">
+                    <input type="text" id="chat-input" placeholder="Ask a question about your feed..." class="w-full bg-slate-800/50 text-white border border-white/10 rounded-xl pl-5 pr-24 py-4 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder-slate-500" disabled>
+                    <button id="chat-submit" onclick="askQuestion()" class="absolute right-2 top-2 bottom-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" disabled>
                         <span>Ask</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="text-center text-slate-400 text-sm py-8 border-t border-slate-200 mt-12">
-            <p>Taste © 2025 | AI News Curator</p>
+        <div class="text-center text-slate-600 text-sm pb-8">
+            <p>Taste © 2025 | Neural News Aggregator</p>
         </div>
-        </div>
-    </div>
+
+    </main>
 
     <script>
         const API_URL = "http://127.0.0.1:5000";
@@ -161,8 +288,7 @@
                     const cb = document.querySelector(`input[name="category"][value="${val}"]`);
                     if (cb) {
                         cb.checked = true;
-                        const label = cb.closest('label');
-                        if (label) label.classList.add('bg-slate-100','border-slate-400');
+                        // No need to manually toggle classList for styles, CSS :checked selector handles it now
                     }
                 });
                 // Also render pills view
@@ -172,10 +298,10 @@
                     if (!pills) {
                         pills = document.createElement('div');
                         pills.id = 'selected-categories-pills';
-                        pills.className = 'mt-2 mb-2 flex flex-wrap gap-2';
-                        parent.parentNode.insertBefore(pills, parent);
+                        pills.className = 'mt-2 mb-2 flex flex-wrap gap-2 justify-center'; // Added justify-center
+                        // Insert at top of summary logic handled in buildFeed usually, but safe here
                     }
-                    pills.innerHTML = arr.map(c => `<span class="px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-sm">${c}</span>`).join('');
+                    pills.innerHTML = arr.map(c => `<span class="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-200 text-xs font-medium">${c}</span>`).join('');
                 }
                 return arr;
             } catch(e) { return []; }
@@ -186,11 +312,7 @@
             const allCheckboxes = document.querySelectorAll('input[name="category"]');
             allCheckboxes.forEach(cb => {
                 cb.addEventListener('change', () => {
-                    const label = cb.closest('label');
-                    if (label) {
-                        if (cb.checked) label.classList.add('bg-slate-100','border-slate-400');
-                        else label.classList.remove('bg-slate-100','border-slate-400');
-                    }
+                    // CSS handles the visual change via :checked + div
                     const checked = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(x => x.value);
                     saveSelectedCategories(checked);
                     
@@ -199,11 +321,11 @@
                     if (checked.length > 0) {
                         const articlesPerCategory = 5;
                         const totalArticles = checked.length * articlesPerCategory;
-                        countEl.textContent = `Selected: ${checked.length} category(ies) → You will get ${totalArticles} articles (${articlesPerCategory} per category)`;
-                        countEl.className = 'text-slate-600 text-sm mt-3 text-center font-medium';
+                        countEl.textContent = `Active: ${checked.length} domains → ~${totalArticles} articles`;
+                        countEl.className = 'text-indigo-400 text-sm mt-4 text-center font-medium animate-pulse';
                     } else {
-                        countEl.textContent = 'Select categories above to see article count';
-                        countEl.className = 'text-slate-500 text-sm mt-3 text-center';
+                        countEl.textContent = 'Select categories above to begin';
+                        countEl.className = 'text-slate-500 text-sm mt-4 text-center';
                     }
                 });
             });
@@ -222,7 +344,7 @@
             // Get selected categories
             const checkedBoxes = document.querySelectorAll('input[name="category"]:checked');
             if (checkedBoxes.length === 0) {
-                summaryOutput.innerHTML = '<p class="text-slate-500 font-semibold">Please select at least one category first.</p>';
+                summaryOutput.innerHTML = '<p class="text-red-400 font-semibold text-center py-8">Please select at least one category first.</p>';
                 return;
             }
             const categories = Array.from(checkedBoxes).map(cb => cb.value);
@@ -231,12 +353,13 @@
 
             // Set loading state
             summaryOutput.innerHTML = `
-                <div class="flex items-center justify-center p-8">
-                    <div class="spinner mr-4"></div>
-                    <span class="text-slate-600 font-medium">Building feed, scraping articles, and generating summary...</span>
+                <div class="flex flex-col items-center justify-center p-12">
+                    <div class="spinner mb-4"></div>
+                    <span class="text-indigo-300 font-medium animate-pulse">Agents are scraping & analyzing...</span>
                 </div>`;
             buildBtn.disabled = true;
-                buildBtn.innerHTML = '<span>Build & Analyze My Feed</span>';            try {
+            buildBtn.innerHTML = '<span class="opacity-70">Processing...</span>';           
+            try {
                 const response = await fetch(`${API_URL}/build-and-summarize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -269,7 +392,7 @@
                         return text.split(/(?<=[.!?])\s+/).filter(Boolean);
                     }
 
-                    let out = `<div><h3 class="text-2xl font-bold text-slate-800 mb-6">Article Findings: <span class="text-slate-600">${escapeHtml(domainName)}</span></h3>`;
+                    let out = `<div class="fade-up"><h3 class="text-2xl font-bold text-white mb-6 border-l-4 border-indigo-500 pl-4">Analysis: <span class="text-indigo-400">${escapeHtml(domainName)}</span></h3>`;
 
                     // show all articles
                     summaries.forEach((s, idx) => {
@@ -277,13 +400,13 @@
                         let keyFinding = '';
                         let summaryLines = '';
                         let title = '';
-                        let source = 'Unknown';
+                        let source = 'Unknown Source';
                         let isNumeric = false;
                         if (typeof s === 'object') {
                             keyFinding = s.key_finding || '';
                             summaryLines = s.summary || '';
                             title = s.title || keyFinding;
-                            source = s.source || 'Unknown';
+                            source = s.source || 'Unknown Source';
                             isNumeric = !!s.is_numeric;
                         } else {
                             const sents = splitSentences(s);
@@ -292,40 +415,33 @@
                             title = keyFinding;
                         }
 
-                        // Don't truncate key finding - show full text
-                        // const kwords = keyFinding.split(/\s+/).filter(Boolean);
-                        // if (kwords.length > 15) keyFinding = kwords.slice(0,15).join(' ') + '...';
-                        // else if (kwords.length < 8) keyFinding = kwords.slice(0,12).join(' ');
-
-                        // Ensure summary is complete - don't truncate
-                        // const swords = summaryLines.split(/\s+/).filter(Boolean);
-                        // if (swords.length < 50) {
-                        //     // Server already provides 80+ word summaries
-                        // }
-
-                        const relevance = `Relevant to ${escapeHtml(domainName)} readers.`;
+                        const relevance = `Relevant to ${escapeHtml(domainName)} analysis.`;
+                        const articleLink = s.link || '#';
+                        const linkTarget = s.link ? '_blank' : '';
+                        const linkRel = s.link ? 'noopener noreferrer' : '';
 
                         out += `
-                            <div class="article-card mt-5 border-2 border-slate-200 rounded-lg p-5 bg-white hover:border-slate-300">
-                                <div class="flex items-start gap-3 mb-3">
+                            <a href="${escapeHtml(articleLink)}" target="${linkTarget}" rel="${linkRel}" class="group block mt-6 border border-white/10 rounded-xl p-6 bg-slate-800/40 hover:bg-slate-800/60 hover:border-indigo-500/30 transition-all cursor-pointer no-underline">
+                                <div class="flex items-start gap-3 mb-4">
                                     <div class="flex-grow">
-                                        <h3 class="text-lg font-bold text-slate-800">Article ${idx+1}: ${escapeHtml((title || '').slice(0,100))}</h3>
-                                        <div class="text-sm text-slate-600 mt-1"><span class="font-semibold text-slate-700">${escapeHtml(source)}</span></div>
+                                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-indigo-300 transition-colors line-clamp-2">#${idx+1}: ${escapeHtml((title || '').slice(0,100))}</h3>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <span class="px-2 py-0.5 rounded bg-slate-700 text-xs text-slate-300 border border-slate-600">${escapeHtml(source)}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="space-y-3 ml-9">
+                                <div class="space-y-4 pl-4 border-l border-white/10">
                                     <div>
-                                        <p class="font-semibold text-slate-700">Key Finding:</p>
-                                        <p class="text-slate-700 mt-1">${escapeHtml(keyFinding)}</p>
+                                        <p class="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">Key Finding</p>
+                                        <p class="text-slate-300 leading-relaxed">${escapeHtml(keyFinding)}</p>
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-slate-700">Summary:</p>
-                                        <p class="text-slate-700 mt-1">${escapeHtml(summaryLines)}</p>
-                                        ${isNumeric ? '<p class="mt-2 text-sm italic text-slate-500">Note: Numeric data/tables removed from source</p>' : ''}
+                                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Summary</p>
+                                        <p class="text-slate-400 text-sm leading-relaxed">${escapeHtml(summaryLines)}</p>
+                                        ${isNumeric ? '<p class="mt-2 text-xs italic text-slate-600">Note: Numeric data/tables condensed</p>' : ''}
                                     </div>
-                                    <div class="text-sm text-slate-600 pt-2 border-t border-slate-200">${escapeHtml(relevance)}</div>
                                 </div>
-                            </div>`;
+                            </a>`;
                     });
 
                     out += `</div>`;
@@ -343,57 +459,32 @@
                     } else if (result && result.summary_html) {
                         articlesHtml = result.summary_html;
                     } else if (result && result.summary) {
-                        articlesHtml = `<div class="p-4">${escapeHtml(result.summary)}</div>`;
+                        articlesHtml = `<div class="p-4 text-slate-300">${escapeHtml(result.summary)}</div>`;
                     } else {
-                        articlesHtml = '<p class="text-gray-500">No summary returned from server.</p>';
+                        articlesHtml = '<p class="text-slate-500 italic">No summary returned from server.</p>';
                     }
                 } catch (e) {
                     console.error('Error deciding which summary to render', e, result);
-                    articlesHtml = '<p class="text-red-500">Failed to render summary (see console).</p>';
+                    articlesHtml = '<p class="text-red-400">Failed to render summary visual (see console).</p>';
                 }
 
                 summaryOutput.innerHTML = articlesHtml;
                 
                 document.getElementById('chat-input').disabled = false;
                 document.getElementById('chat-submit').disabled = false;
-                document.getElementById('chat-window').innerHTML = `<div class="text-slate-600 font-semibold text-center py-12">Your feed is ready. You can now ask questions!</div>`;
+                document.getElementById('chat-window').innerHTML = `<div class="text-indigo-300 font-medium text-center py-12 animate-pulse">Feed active. Agents ready for queries.</div>`;
                 isFeedBuilt = true;
-
-                // Visually mark selected category labels so the user sees what they selected
-                try {
-                    const allCheckboxes = document.querySelectorAll('input[name="category"]');
-                    allCheckboxes.forEach(cb => {
-                        const label = cb.closest('label');
-                        if (!label) return;
-                        // base classes for checked look
-                        if (cb.checked) {
-                            label.classList.add('bg-slate-100','border-slate-400');
-                        } else {
-                            label.classList.remove('bg-slate-100','border-slate-400');
-                        }
-                    });
-
-                    // Show a small list of selected categories above the summary for clarity
-                    const categoryPillsId = 'selected-categories-pills';
-                    let pills = document.getElementById(categoryPillsId);
-                    if (!pills) {
-                        pills = document.createElement('div');
-                        pills.id = categoryPillsId;
-                        pills.className = 'mt-2 mb-2 flex flex-wrap gap-2';
-                        const parent = document.getElementById('summary-output');
-                        parent.parentNode.insertBefore(pills, parent);
-                    }
-                    pills.innerHTML = categories.map(c => `<span class="px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-sm">${c}</span>`).join('');
-                } catch (e) {
-                    console.warn('Failed to mark selected categories visually', e);
-                }
 
             } catch (error) {
                 console.error("Error building feed:", error);
-                summaryOutput.innerHTML = `<p class="text-red-500"><b>Error:</b> ${error.message}</p>`;
+                summaryOutput.innerHTML = `<p class="text-red-400 bg-red-500/10 p-4 rounded-lg border border-red-500/20"><b>Error:</b> ${error.message}</p>`;
             } finally {
                 buildBtn.disabled = false;
-                buildBtn.innerHTML = '<span>🚀</span> <span>Build & Analyze My Feed</span>';
+                buildBtn.innerHTML = `
+                    <span class="relative flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Refresh Analysis
+                    </span>`;
             }
         }
 
@@ -406,15 +497,29 @@
             if (!question || !isFeedBuilt) return;
 
             // Clear placeholder if first message
-            if (chatWindow.innerHTML.includes('Chat history will appear here') || chatWindow.innerHTML.includes('Your feed is ready')) {
+            if (chatWindow.innerHTML.includes('History empty') || chatWindow.innerHTML.includes('Feed active')) {
                 chatWindow.innerHTML = '';
             }
 
-            chatWindow.innerHTML += `<div class="chat-message text-right mb-3"><span class="inline-block bg-slate-700 text-white rounded-xl px-5 py-3 text-sm max-w-xs break-words">${chatInput.value}</span></div>`;
+            chatWindow.innerHTML += `
+                <div class="flex justify-end mb-4 fade-up">
+                    <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-5 py-3 text-sm max-w-xs break-words shadow-lg shadow-indigo-500/20">
+                        ${question}
+                    </div>
+                </div>`;
+            
             chatInput.value = '';
             chatSubmit.disabled = true;
             
-            chatWindow.innerHTML += `<div id="loading-answer" class="chat-message text-left mb-3"><span class="inline-block bg-slate-100 text-slate-700 rounded-xl px-5 py-3 text-sm border border-slate-300">Thinking...</span></div>`;
+            const loadingId = 'loading-' + Date.now();
+            chatWindow.innerHTML += `
+                <div id="${loadingId}" class="flex justify-start mb-4 fade-up">
+                    <div class="bg-slate-800 text-slate-300 rounded-2xl rounded-tl-sm px-5 py-3 text-sm border border-white/5 flex items-center gap-2">
+                        <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>`;
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
             try {
@@ -431,13 +536,25 @@
 
                 const result = await response.json();
                 
-                document.getElementById('loading-answer').remove();
-                chatWindow.innerHTML += `<div class="chat-message text-left mb-3"><div class="inline-block bg-white text-slate-800 rounded-xl px-5 py-3 text-sm max-w-lg break-words border border-slate-300"><p class="font-semibold text-slate-700 mb-2">Assistant</p><p>${result.answer}</p></div></div>`;
+                document.getElementById(loadingId).remove();
+                chatWindow.innerHTML += `
+                    <div class="flex justify-start mb-4 fade-up">
+                        <div class="bg-slate-800 text-slate-200 rounded-2xl rounded-tl-sm px-6 py-4 text-sm max-w-lg break-words border border-white/10 shadow-md">
+                            <p class="text-xs font-bold text-indigo-400 mb-2 uppercase tracking-wider">Taste AI</p>
+                            <p class="leading-relaxed">${result.answer}</p>
+                        </div>
+                    </div>`;
 
             } catch (error) {
                 console.error("Error asking question:", error);
-                document.getElementById('loading-answer').remove();
-                chatWindow.innerHTML += `<div class="chat-message text-left mb-3"><span class="inline-block bg-red-50 text-red-700 rounded-xl px-5 py-3 text-sm border border-red-200">Error: ${error.message}</span></div>`;
+                const loader = document.getElementById(loadingId);
+                if(loader) loader.remove();
+                chatWindow.innerHTML += `
+                    <div class="flex justify-start mb-4 fade-up">
+                        <div class="bg-red-900/30 text-red-200 rounded-2xl rounded-tl-sm px-5 py-3 text-sm border border-red-500/30">
+                            Error: ${error.message}
+                        </div>
+                    </div>`;
             } finally {
                 chatSubmit.disabled = false;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
